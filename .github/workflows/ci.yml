@@ -134,20 +134,21 @@ jobs:
 
       - name: Log in to Docker Hub
         shell: pwsh
-        run: echo $Env:DOCKER_PASSWORD | docker login -u $Env:DOCKER_USERNAME --password-stdin
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Tag and push backend
         shell: pwsh
         run: |
-          docker tag backend-ci $Env:DOCKER_USERNAME/cloudnative-backend:${{ github.sha }}
-          docker tag backend-ci $Env:DOCKER_USERNAME/cloudnative-backend:latest
-          docker push $Env:DOCKER_USERNAME/cloudnative-backend:${{ github.sha }}
-          docker push $Env:DOCKER_USERNAME/cloudnative-backend:latest
+          docker tag backend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}
+          docker tag backend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:latest
 
       - name: Tag and push frontend
         shell: pwsh
         run: |
-          docker tag frontend-ci $Env:DOCKER_USERNAME/cloudnative-frontend:${{ github.sha }}
-          docker tag frontend-ci $Env:DOCKER_USERNAME/cloudnative-frontend:latest
-          docker push $Env:DOCKER_USERNAME/cloudnative-frontend:${{ github.sha }}
-          docker push $Env:DOCKER_USERNAME/cloudnative-frontend:latest
+          docker tag frontend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
+          docker tag frontend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
