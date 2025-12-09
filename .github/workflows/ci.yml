@@ -98,45 +98,51 @@ jobs:
 
       - name: Run backend container (healthcheck)
         run: |
+          if (docker ps -a --format '{{.Names}}' | Select-String -Pattern '^backend-test$') {
+              docker rm -f backend-test
+          }
           docker run -d --name backend-test backend-ci
-          $maxAttempts = 10
-          $attempt = 0
-          do {
-              Start-Sleep -Seconds 2
+          Write-Host "Waiting for backend container to become healthy..."
+          for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' backend-test 2>$null
-              $attempt++
-          } while (($status -ne 'healthy') -and ($attempt -lt $maxAttempts))
-          if ($status -ne 'healthy') { throw "Backend container did not become healthy" }
+              Write-Host "Attempt $($i+1): status = $status"
+              if ($status -eq 'healthy') { break }
+              Start-Sleep -Seconds 2
+          }
+          Write-Host "Backend health status: $status"
           docker stop backend-test
           docker rm backend-test
 
       - name: Run frontend container (healthcheck)
         run: |
+          if (docker ps -a --format '{{.Names}}' | Select-String -Pattern '^frontend-test$') {
+              docker rm -f frontend-test
+          }
           docker run -d --name frontend-test frontend-ci
-          $maxAttempts = 10
-          $attempt = 0
-          do {
-              Start-Sleep -Seconds 2
+          Write-Host "Waiting for frontend container to become healthy..."
+          for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' frontend-test 2>$null
-              $attempt++
-          } while (($status -ne 'healthy') -and ($attempt -lt $maxAttempts))
-          if ($status -ne 'healthy') { throw "Frontend container did not become healthy" }
+              Write-Host "Attempt $($i+1): status = $status"
+              if ($status -eq 'healthy') { break }
+              Start-Sleep -Seconds 2
+          }
+          Write-Host "Frontend health status: $status"
           docker stop frontend-test
           docker rm frontend-test
 
-      - name: Log in to GHCR
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u mathyscxsl --password-stdin
+      - name: Log in to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Tag and push backend
         run: |
-          docker tag backend-ci ghcr.io/mathyscxsl/cloudnative-backend:${{ github.sha }}
-          docker tag backend-ci ghcr.io/mathyscxsl/cloudnative-backend:latest
-          docker push ghcr.io/mathyscxsl/cloudnative-backend:${{ github.sha }}
-          docker push ghcr.io/mathyscxsl/cloudnative-backend:latest
+          docker tag backend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}
+          docker tag backend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:latest
 
       - name: Tag and push frontend
         run: |
-          docker tag frontend-ci ghcr.io/mathyscxsl/cloudnative-frontend:${{ github.sha }}
-          docker tag frontend-ci ghcr.io/mathyscxsl/cloudnative-frontend:latest
-          docker push ghcr.io/mathyscxsl/cloudnative-frontend:${{ github.sha }}
-          docker push ghcr.io/mathyscxsl/cloudnative-frontend:latest
+          docker tag frontend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
+          docker tag frontend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
