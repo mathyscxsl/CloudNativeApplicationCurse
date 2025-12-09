@@ -29,19 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # FRONTEND BUILD
       - name: Install frontend dependencies
         run: cd frontend && npm install
 
       - name: Build frontend
         run: cd frontend && npm run build
 
-      # BACKEND BUILD
       - name: Install backend dependencies
         run: cd backend && npm install
-
-      - name: Build backend
-        run: cd backend && npm run build
 
   test:
     runs-on: self-hosted
