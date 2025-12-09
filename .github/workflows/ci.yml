@@ -103,6 +103,7 @@ jobs:
               docker rm -f backend-test
           }
           docker run -d --name backend-test backend-ci
+
           Write-Host "Waiting for backend container to become healthy..."
           for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' backend-test 2>$null
@@ -111,6 +112,7 @@ jobs:
               Start-Sleep -Seconds 2
           }
           Write-Host "Backend health status: $status"
+
           docker stop backend-test
           docker rm backend-test
 
@@ -121,6 +123,7 @@ jobs:
               docker rm -f frontend-test
           }
           docker run -d --name frontend-test frontend-ci
+
           Write-Host "Waiting for frontend container to become healthy..."
           for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' frontend-test 2>$null
@@ -129,26 +132,26 @@ jobs:
               Start-Sleep -Seconds 2
           }
           Write-Host "Frontend health status: $status"
+
           docker stop frontend-test
           docker rm frontend-test
 
-      - name: Log in to Docker Hub using PAT
+      - name: Log in to Docker Hub (PAT)
         shell: pwsh
-        run: |
-          $Env:DOCKER_PAT | docker login -u $Env:DOCKER_USERNAME --password-stdin
+        run: docker login -u "$Env:DOCKER_USERNAME" -p "$Env:DOCKER_PAT"
 
       - name: Tag and push backend
         shell: pwsh
         run: |
-          docker tag backend-ci $Env:DOCKER_USERNAME/cloudnative-backend:$Env:GITHUB_SHA
-          docker tag backend-ci $Env:DOCKER_USERNAME/cloudnative-backend:latest
-          docker push $Env:DOCKER_USERNAME/cloudnative-backend:$Env:GITHUB_SHA
-          docker push $Env:DOCKER_USERNAME/cloudnative-backend:latest
+          docker tag backend-ci "$Env:DOCKER_USERNAME/cloudnative-backend:$Env:GITHUB_SHA"
+          docker tag backend-ci "$Env:DOCKER_USERNAME/cloudnative-backend:latest"
+          docker push "$Env:DOCKER_USERNAME/cloudnative-backend:$Env:GITHUB_SHA"
+          docker push "$Env:DOCKER_USERNAME/cloudnative-backend:latest"
 
       - name: Tag and push frontend
         shell: pwsh
         run: |
-          docker tag frontend-ci $Env:DOCKER_USERNAME/cloudnative-frontend:$Env:GITHUB_SHA
-          docker tag frontend-ci $Env:DOCKER_USERNAME/cloudnative-frontend:latest
-          docker push $Env:DOCKER_USERNAME/cloudnative-frontend:$Env:GITHUB_SHA
-          docker push $Env:DOCKER_USERNAME/cloudnative-frontend:latest
+          docker tag frontend-ci "$Env:DOCKER_USERNAME/cloudnative-frontend:$Env:GITHUB_SHA"
+          docker tag frontend-ci "$Env:DOCKER_USERNAME/cloudnative-frontend:latest"
+          docker push "$Env:DOCKER_USERNAME/cloudnative-frontend:$Env:GITHUB_SHA"
+          docker push "$Env:DOCKER_USERNAME/cloudnative-frontend:latest"
