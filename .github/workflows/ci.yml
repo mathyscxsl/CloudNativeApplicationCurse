@@ -11,19 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # FRONTEND LINT
       - name: Install frontend dependencies
         run: cd frontend && npm install
 
-      - name: Lint frontend
-        run: cd frontend && npm run lint
+      - name: Lint staged frontend files
+        run: cd frontend && npx lint-staged
 
-      # BACKEND LINT
       - name: Install backend dependencies
         run: cd backend && npm install
 
-      - name: Lint backend
-        run: cd backend && npm run lint
+      - name: Lint staged backend files
+        run: cd backend && npx lint-staged
 
   build:
     runs-on: self-hosted
