@@ -81,7 +81,7 @@ Exemples :
 
 ---
 
-## 📸 Captures d’écran TP4 – Docker Hub
+## 📸 Captures d’écran TP3 – Docker Hub
 
 ### Application
 
