@@ -11,7 +11,7 @@ Ce TP documente les règles Git, la convention de commit, les hooks activés dan
 
 ---
 
-# ✔ TP1 + TP2 – Git & Workflow Rules
+# ✔ TP1 Git & Workflow Rules
 
 ## ✔ Règles Git utilisées
 
@@ -35,7 +35,7 @@ Exemples :
 
 ---
 
-# ✔ TP3 – CI, SonarCloud & Quality Gate
+# ✔ TP2 – CI, SonarCloud & Quality Gate
 
 ## 📸 Captures d’écran
 
@@ -61,7 +61,7 @@ Exemples :
 
 ---
 
-# ✔ TP4 – CI/CD Docker & Publication des images sur Docker Hub
+# ✔ TP3 – CI/CD Docker & Publication des images sur Docker Hub
 
 ### 🔐 Secrets utilisés
 
