@@ -12,16 +12,16 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install frontend dependencies
-        run: cd frontend; npm install
+        run: cd frontend && npm install
 
       - name: Lint staged frontend files
-        run: cd frontend; npx lint-staged
+        run: cd frontend && npx lint-staged
 
       - name: Install backend dependencies
-        run: cd backend; npm install
+        run: cd backend && npm install
 
       - name: Lint staged backend files
-        run: cd backend; npx lint-staged
+        run: cd backend && npx lint-staged
 
   build:
     runs-on: self-hosted
@@ -30,13 +30,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install frontend dependencies
-        run: cd frontend; npm install
+        run: cd frontend && npm install
 
       - name: Build frontend
-        run: cd frontend; npm run build
+        run: cd frontend && npm run build
 
       - name: Install backend dependencies
-        run: cd backend; npm install
+        run: cd backend && npm install
 
   test:
     runs-on: self-hosted
@@ -45,10 +45,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install backend dependencies
-        run: cd backend; npm install
+        run: cd backend && npm install
 
       - name: Run backend tests
-        run: cd backend; npm test -- --coverage
+        run: cd backend && npm test -- --coverage
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install Backend Dependencies
-        run: cd backend; npm install
+        run: cd backend && npm install
 
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
@@ -100,7 +100,7 @@ jobs:
         run: |
           docker run -d --name backend-test backend-ci
           Start-Sleep -Seconds 10
-          if (-not (docker ps -Filter "name=backend-test" -q)) { throw "Backend container did not start" }
+          if (-not (docker ps --filter "name=backend-test" -q)) { throw "Backend container did not start" }
           docker stop backend-test
           docker rm backend-test
 
@@ -108,7 +108,7 @@ jobs:
         run: |
           docker run -d --name frontend-test frontend-ci
           Start-Sleep -Seconds 5
-          if (-not (docker ps -Filter "name=frontend-test" -q)) { throw "Frontend container did not start" }
+          if (-not (docker ps --filter "name=frontend-test" -q)) { throw "Frontend container did not start" }
           docker stop frontend-test
           docker rm frontend-test
 
