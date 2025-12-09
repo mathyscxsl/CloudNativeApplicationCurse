@@ -99,13 +99,10 @@ jobs:
       - name: Run backend container (healthcheck)
         shell: pwsh
         run: |
-          # Delete old container if exists
           if (docker ps -a --format '{{.Names}}' | Select-String '^backend-test$') {
               docker rm -f backend-test
           }
-
           docker run -d --name backend-test backend-ci
-
           Write-Host "Checking backend health..."
           for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' backend-test 2>$null
@@ -113,7 +110,6 @@ jobs:
               if ($status -eq 'healthy') { break }
               Start-Sleep -Seconds 2
           }
-
           Write-Host "Final backend health status: $status"
           docker rm -f backend-test
 
@@ -123,9 +119,7 @@ jobs:
           if (docker ps -a --format '{{.Names}}' | Select-String '^frontend-test$') {
               docker rm -f frontend-test
           }
-
           docker run -d --name frontend-test frontend-ci
-
           Write-Host "Checking frontend health..."
           for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' frontend-test 2>$null
@@ -133,7 +127,6 @@ jobs:
               if ($status -eq 'healthy') { break }
               Start-Sleep -Seconds 2
           }
-
           Write-Host "Final frontend health status: $status"
           docker rm -f frontend-test
 
@@ -156,3 +149,21 @@ jobs:
           docker tag frontend-ci ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
           docker push ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
+
+  deploy:
+    name: Deploy Latest Images
+    runs-on: self-hosted
+    needs: docker
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set image variables
+        run: |
+          echo "BACKEND_IMAGE=${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}" >> $GITHUB_ENV
+          echo "FRONTEND_IMAGE=${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Deploy via PowerShell
+        shell: pwsh
+        run: |
+          ./scripts/deploy.ps1 -BACKEND_IMAGE $Env:BACKEND_IMAGE -FRONTEND_IMAGE $Env:FRONTEND_IMAGE
