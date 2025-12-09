@@ -6,28 +6,6 @@
 
 Ce TP documente les règles Git, la convention de commit, les hooks activés dans ce dépôt, et présente l’application Gym Management System.
 
-## 📸 Captures d’écran
-
-### SonarCloud – Overview du projet
-
-![SonarCloud Overview](docs/screenshots/sonar-dashboard.png)
-
-### SonarCloud – Détails Quality Gate
-
-![SonarCloud Not Computed Details](docs/screenshots/quality-gate.png)
-
-### GitHub – Pull Request avec Quality Gate failed (Security Hotspots)
-
-![PR Quality Gate Failed](docs/screenshots/quality-gate-failed-pr.png)
-
-### GitHub – Tous les checks passent (CI build, lint, test, SonarCloud)
-
-![PR Checks Passed](docs/screenshots/jobs-quality-gate-success.png)
-
-### GitHub – Branch Protection Rules (main & develop)
-
-![Branch Protection](docs/screenshots/regles-branches.png)
-
 ## ✔ Règles Git utilisées
 
 - Branches principales : `main`, `develop`
@@ -60,15 +38,27 @@ Exemples :
 - Commits doivent suivre la convention Commitlint
 - Husky pre-commit lint front & back
 
----
+## 📸 Captures d’écran
 
-## CI/CD Pipeline
+### SonarCloud – Overview du projet
 
-````mermaid
-flowchart TD
-    Lint --> Build
-    Build --> Test
-    Test --> SonarCloud
+![SonarCloud Overview](docs/screenshots/sonar-dashboard.png)
+
+### SonarCloud – Détails Quality Gate
+
+![SonarCloud Not Computed Details](docs/screenshots/quality-gate.png)
+
+### GitHub – Pull Request avec Quality Gate failed (Security Hotspots)
+
+![PR Quality Gate Failed](docs/screenshots/quality-gate-failed-pr.png)
+
+### GitHub – Tous les checks passent (CI build, lint, test, SonarCloud)
+
+![PR Checks Passed](docs/screenshots/jobs-quality-gate-success.png)
+
+### GitHub – Branch Protection Rules (main & develop)
+
+![Branch Protection](docs/screenshots/regles-branches.png)
 
 ---
 
@@ -138,6 +128,8 @@ A complete fullstack gym management application built with modern web technologi
    ```bash
    git clone <repository-url>
    cd gym-management-system
+   ```
+
 ````
 
 2. **Set up environment variables**
@@ -336,3 +328,4 @@ This project is licensed under the MIT License.
 ## Support
 
 For support or questions, please open an issue in the repository.
+````
