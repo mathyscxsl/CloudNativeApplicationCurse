@@ -131,7 +131,9 @@ jobs:
           docker rm frontend-test
 
       - name: Log in to Docker Hub
-        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        shell: pwsh
+        run: Write-Output "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
 
 
       - name: Tag and push backend
