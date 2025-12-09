@@ -1,30 +1,23 @@
-FROM node:18-alpine3.16 AS build
-RUN apk add --no-cache openssl1.1-compat
+FROM node:18-alpine AS build
+
+RUN apk add --no-cache bash git openssl
 
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
-
-COPY . .
-
+COPY . ./
 RUN npx prisma generate
-RUN npm run build || echo "No build script, skipping"
 
-FROM node:18-alpine3.16 AS production
-
-RUN apk add --no-cache openssl1.1-compat
+FROM node:18-alpine
+RUN apk add --no-cache bash git openssl
 
 WORKDIR /app
-
-COPY package*.json ./
-RUN npm install --omit=dev
-
-COPY --from=build /app .
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app ./
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV DATABASE_URL=postgresql://admin:admin123@postgres:5432/gym?schema=public
 
 EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+CMD npx prisma migrate deploy && node src/index.js
