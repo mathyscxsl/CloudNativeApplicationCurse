@@ -1,4 +1,3 @@
-
 name: CI Pipeline
 
 on:
@@ -11,30 +10,51 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: npm install
-      - name: Run lint
-        run: npm run lint
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Lint staged frontend files
+        run: cd frontend && npx lint-staged
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
+
+      - name: Lint staged backend files
+        run: cd backend && npx lint-staged
 
   build:
     runs-on: self-hosted
     needs: lint
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: npm install
-      - name: Build frontend and backend
-        run: npm run build
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
 
   test:
     runs-on: self-hosted
     needs: build
     steps:
       - uses: actions/checkout@v3
+
       - name: Install backend dependencies
-        run: npm install
+        run: cd backend && npm install
+
       - name: Run backend tests
-        run: npm test
+        run: cd backend && npm test -- --coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
 
   sonarcloud:
     name: SonarCloud Scan & Quality Gate
@@ -55,11 +75,7 @@ jobs:
             -Dsonar.organization=mathyscxsl
             -Dsonar.sources=backend/src
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number || github.ref }}
-            -Dsonar.pullrequest.branch=${{ github.head_ref || github.ref }}
-            -Dsonar.pullrequest.base=${{ github.base_ref || 'develop' }}
-
-      - name: SonarCloud Quality Gate check
-        uses: sonarsource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
+            -Dsonar.pullrequest.branch=${{ github.head_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }}

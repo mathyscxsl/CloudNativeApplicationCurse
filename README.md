@@ -1,7 +1,6 @@
 # README.md du Projet
 
-[![CI](https://github.com/<TON_ORG>/<TON_REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/mathyscxsl/CloudNativeApplicationCurse/actions/workflows/ci.yml)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=mathyscxsl_CloudNativeApplicationCurse&metric=alert_status)](https://sonarcloud.io/dashboard?id=mathyscxsl_CloudNativeApplicationCurse)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mathyscxsl_CloudNativeApplicationCurse&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=mathyscxsl_CloudNativeApplicationCurse)
 
 ---
 
