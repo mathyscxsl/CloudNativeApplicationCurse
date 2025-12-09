@@ -135,7 +135,7 @@ jobs:
       - name: Log in to Docker Hub
         shell: pwsh
         run: |
-          docker login -u $Env:DOCKER_USERNAME -p $Env:DOCKER_PASSWORD
+          $Env:DOCKER_PASSWORD | docker login -u $Env:DOCKER_USERNAME --password-stdin
 
       - name: Tag and push backend
         shell: pwsh
