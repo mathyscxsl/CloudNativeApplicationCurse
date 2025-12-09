@@ -99,16 +99,28 @@ jobs:
       - name: Run backend container (healthcheck)
         run: |
           docker run -d --name backend-test backend-ci
-          Start-Sleep -Seconds 10
-          if (-not (docker ps --filter "name=backend-test" -q)) { throw "Backend container did not start" }
+          $maxAttempts = 10
+          $attempt = 0
+          do {
+              Start-Sleep -Seconds 2
+              $status = docker inspect --format='{{.State.Health.Status}}' backend-test 2>$null
+              $attempt++
+          } while (($status -ne 'healthy') -and ($attempt -lt $maxAttempts))
+          if ($status -ne 'healthy') { throw "Backend container did not become healthy" }
           docker stop backend-test
           docker rm backend-test
 
       - name: Run frontend container (healthcheck)
         run: |
           docker run -d --name frontend-test frontend-ci
-          Start-Sleep -Seconds 5
-          if (-not (docker ps --filter "name=frontend-test" -q)) { throw "Frontend container did not start" }
+          $maxAttempts = 10
+          $attempt = 0
+          do {
+              Start-Sleep -Seconds 2
+              $status = docker inspect --format='{{.State.Health.Status}}' frontend-test 2>$null
+              $attempt++
+          } while (($status -ne 'healthy') -and ($attempt -lt $maxAttempts))
+          if ($status -ne 'healthy') { throw "Frontend container did not become healthy" }
           docker stop frontend-test
           docker rm frontend-test
 
