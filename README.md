@@ -8,35 +8,25 @@ Ce TP documente les règles Git, la convention de commit, les hooks activés dan
 
 ## 📸 Captures d’écran
 
-> Les images sont stockées dans `docs/screenshots/`. Remplace/ajoute tes propres fichiers si nécessaire.
-
 ### SonarCloud – Overview du projet
 
-![SonarCloud Overview](docs/screenshots/sonarcloud-overview.png)
+![SonarCloud Overview](docs/screenshots/sonar-dashboard.png)
 
-### SonarCloud – Main Branch Status (Not computed)
+### SonarCloud – Détails Quality Gate
 
-![SonarCloud Main Branch Status](docs/screenshots/sonarcloud-main-not-computed.png)
-
-### SonarCloud – Détails Quality Gate non calculé
-
-![SonarCloud Not Computed Details](docs/screenshots/sonarcloud-not-computed-details.png)
+![SonarCloud Not Computed Details](docs/screenshots/quality-gate.png)
 
 ### GitHub – Pull Request avec Quality Gate failed (Security Hotspots)
 
-![PR Quality Gate Failed](docs/screenshots/github-pr-quality-gate-failed.png)
-
-### GitHub – Pull Request avec Quality Gate passed + checks OK
-
-![PR Quality Gate Passed](docs/screenshots/github-pr-quality-gate-passed.png)
+![PR Quality Gate Failed](docs/screenshots/quality-gate-failed-pr.png)
 
 ### GitHub – Tous les checks passent (CI build, lint, test, SonarCloud)
 
-![PR Checks Passed](docs/screenshots/github-pr-checks-passed.png)
+![PR Checks Passed](docs/screenshots/jobs-quality-gate-success.png)
 
 ### GitHub – Branch Protection Rules (main & develop)
 
-![Branch Protection](docs/screenshots/github-branch-protection.png)
+![Branch Protection](docs/screenshots/regles-branches.png)
 
 ## ✔ Règles Git utilisées
 
