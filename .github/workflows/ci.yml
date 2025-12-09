@@ -79,3 +79,52 @@ jobs:
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
             -Dsonar.pullrequest.branch=${{ github.head_ref }}
             -Dsonar.pullrequest.base=${{ github.base_ref }}
+
+  docker:
+    name: Build, Healthcheck & Push Docker Images
+    runs-on: self-hosted
+    needs: sonarcloud
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend Docker image
+        run: docker build -t backend-ci ./backend
+
+      - name: Build frontend Docker image
+        run: docker build -t frontend-ci ./frontend
+
+      - name: Run backend container (healthcheck)
+        run: |
+          docker run -d --name backend-test backend-ci
+          sleep 10
+          docker ps | grep backend-test
+          docker stop backend-test
+          docker rm backend-test
+
+      - name: Run frontend container (healthcheck)
+        run: |
+          docker run -d --name frontend-test frontend-ci
+          sleep 5
+          docker ps | grep frontend-test
+          docker stop frontend-test
+          docker rm frontend-test
+
+      - name: Log in to GHCR
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u mathyscxsl --password-stdin
+
+      - name: Tag and push backend
+        run: |
+          docker tag backend-ci ghcr.io/mathyscxsl/cloudnative-backend:${{ github.sha }}
+          docker tag backend-ci ghcr.io/mathyscxsl/cloudnative-backend:latest
+          docker push ghcr.io/mathyscxsl/cloudnative-backend:${{ github.sha }}
+          docker push ghcr.io/mathyscxsl/cloudnative-backend:latest
+
+      - name: Tag and push frontend
+        run: |
+          docker tag frontend-ci ghcr.io/mathyscxsl/cloudnative-frontend:${{ github.sha }}
+          docker tag frontend-ci ghcr.io/mathyscxsl/cloudnative-frontend:latest
+          docker push ghcr.io/mathyscxsl/cloudnative-frontend:${{ github.sha }}
+          docker push ghcr.io/mathyscxsl/cloudnative-frontend:latest
