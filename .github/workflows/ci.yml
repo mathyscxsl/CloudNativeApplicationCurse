@@ -102,7 +102,7 @@ jobs:
           if (docker ps -a --format '{{.Names}}' | Select-String '^backend-test$') {
               docker rm -f backend-test
           }
-          docker run -d --name backend-test backend-ci
+          docker run -d --name backend-test -e DATABASE_URL=${{ secrets.DATABASE_URL }} backend-ci
           Write-Host "Checking backend health..."
           for ($i=0; $i -lt 10; $i++) {
               $status = docker inspect --format='{{.State.Health.Status}}' backend-test 2>$null
