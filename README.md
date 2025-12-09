@@ -1,11 +1,42 @@
 # README.md du Projet
 
-[![CI](https://github.com/<TON_ORG>/<TON_REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/mathyscxsl/CloudNativeApplicationCurse/actions/workflows/ci.yml)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=mathyscxsl_CloudNativeApplicationCurse&metric=alert_status)](https://sonarcloud.io/dashboard?id=mathyscxsl_CloudNativeApplicationCurse)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mathyscxsl_CloudNativeApplicationCurse&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=mathyscxsl_CloudNativeApplicationCurse)
 
 ---
 
 Ce TP documente les règles Git, la convention de commit, les hooks activés dans ce dépôt, et présente l’application Gym Management System.
+
+## 📸 Captures d’écran
+
+> Les images sont stockées dans `docs/screenshots/`. Remplace/ajoute tes propres fichiers si nécessaire.
+
+### SonarCloud – Overview du projet
+
+![SonarCloud Overview](docs/screenshots/sonarcloud-overview.png)
+
+### SonarCloud – Main Branch Status (Not computed)
+
+![SonarCloud Main Branch Status](docs/screenshots/sonarcloud-main-not-computed.png)
+
+### SonarCloud – Détails Quality Gate non calculé
+
+![SonarCloud Not Computed Details](docs/screenshots/sonarcloud-not-computed-details.png)
+
+### GitHub – Pull Request avec Quality Gate failed (Security Hotspots)
+
+![PR Quality Gate Failed](docs/screenshots/github-pr-quality-gate-failed.png)
+
+### GitHub – Pull Request avec Quality Gate passed + checks OK
+
+![PR Quality Gate Passed](docs/screenshots/github-pr-quality-gate-passed.png)
+
+### GitHub – Tous les checks passent (CI build, lint, test, SonarCloud)
+
+![PR Checks Passed](docs/screenshots/github-pr-checks-passed.png)
+
+### GitHub – Branch Protection Rules (main & develop)
+
+![Branch Protection](docs/screenshots/github-branch-protection.png)
 
 ## ✔ Règles Git utilisées
 
