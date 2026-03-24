@@ -73,16 +73,18 @@ jobs:
 
       - name: Run SonarCloud Scan
         run: |
-          sonar-scanner `
-            -Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse `
-            -Dsonar.organization=mathyscxsl `
-            -Dsonar.host.url=https://sonarcloud.io `
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} `
-            -Dsonar.sources=backend/src `
-            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info `
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} `
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} `
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+          $params = @(
+            "-Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse",
+            "-Dsonar.organization=mathyscxsl",
+            "-Dsonar.host.url=https://sonarcloud.io",
+            "-Dsonar.login=${{ secrets.SONAR_TOKEN }}",
+            "-Dsonar.sources=backend/src",
+            "-Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info",
+            "-Dsonar.pullrequest.key=${{ github.event.pull_request.number }}",
+            "-Dsonar.pullrequest.branch=${{ github.head_ref }}",
+            "-Dsonar.pullrequest.base=${{ github.base_ref }}"
+          )
+          & sonar-scanner @params
 
   docker:
     name: Build & Push Docker Images
