@@ -22,8 +22,9 @@ if ($Target -eq "BLUE") {
 
 Write-Host "==> Switching reverse proxy to $Target..."
 
-Set-Content -Path $activeColorConf      -Value $backUpstream  -Encoding utf8
-Set-Content -Path $activeColorFrontConf -Value $frontUpstream -Encoding utf8
+$enc = [System.Text.Encoding]::ASCII
+[System.IO.File]::WriteAllText((Resolve-Path $activeColorConf).Path, "$backUpstream`n", $enc)
+[System.IO.File]::WriteAllText((Resolve-Path $activeColorFrontConf).Path, "$frontUpstream`n", $enc)
 
 Write-Host "==> Reloading Nginx..."
 docker exec reverse-proxy nginx -s reload
