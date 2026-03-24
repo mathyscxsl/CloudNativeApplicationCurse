@@ -167,12 +167,6 @@ A complete fullstack gym management application built with modern web technologi
 
 ---
 
-# Quick Start
-
-Instructions d’installation et exécution (inchangées)...
-
----
-
 # Contributing
 
 1. Fork
@@ -186,9 +180,3 @@ Instructions d’installation et exécution (inchangées)...
 # License
 
 MIT
-
----
-
-# Support
-
-Pour toute question, merci d’ouvrir une issue.
