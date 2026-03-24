@@ -8,8 +8,6 @@ on:
 jobs:
   lint:
     runs-on: self-hosted
-    container:
-      image: node:18-alpine
     steps:
       - uses: actions/checkout@v3
 
@@ -28,8 +26,6 @@ jobs:
   build:
     runs-on: self-hosted
     needs: lint
-    container:
-      image: node:18-alpine
     steps:
       - uses: actions/checkout@v3
 
@@ -45,8 +41,6 @@ jobs:
   test:
     runs-on: self-hosted
     needs: build
-    container:
-      image: node:18-alpine
     steps:
       - uses: actions/checkout@v3
 
@@ -66,22 +60,20 @@ jobs:
     name: SonarCloud Scan
     runs-on: self-hosted
     needs: test
-    container:
-      image: sonarsource/sonar-scanner-cli:latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Run SonarCloud Scan
         run: |
-          sonar-scanner \
-            -Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse \
-            -Dsonar.organization=mathyscxsl \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=backend/src \
-            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+          sonar-scanner `
+            -Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse `
+            -Dsonar.organization=mathyscxsl `
+            -Dsonar.host.url=https://sonarcloud.io `
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} `
+            -Dsonar.sources=backend/src `
+            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info `
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} `
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} `
             -Dsonar.pullrequest.base=${{ github.base_ref }}
 
   docker:
