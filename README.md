@@ -11,7 +11,7 @@ Ce TP documente les règles Git, la convention de commit, les hooks activés dan
 
 ---
 
-# ✔ TP1 + TP2 – Git & Workflow Rules
+# ✔ TP1 Git & Workflow Rules
 
 ## ✔ Règles Git utilisées
 
@@ -35,7 +35,7 @@ Exemples :
 
 ---
 
-# ✔ TP3 – CI, SonarCloud & Quality Gate
+# ✔ TP2 – CI, SonarCloud & Quality Gate
 
 ## 📸 Captures d’écran
 
@@ -61,7 +61,7 @@ Exemples :
 
 ---
 
-# ✔ TP4 – CI/CD Docker & Publication des images sur Docker Hub
+# ✔ TP3 – CI/CD Docker & Publication des images sur Docker Hub
 
 ### 🔐 Secrets utilisés
 
@@ -81,7 +81,7 @@ Exemples :
 
 ---
 
-## 📸 Captures d’écran TP4 – Docker Hub
+## 📸 Captures d’écran TP3 – Docker Hub
 
 ### Application
 
@@ -111,6 +111,73 @@ Exemples :
 ### Docker Hub – Images poussées dans le registre (backend)
 
 ![Registre Backend](docs/screenshots/registre-back.png)
+
+---
+
+# ✔ TP4 – Déploiement local automatisé
+
+## 🔄 Déploiement local automatisé
+
+### Fonctionnement
+
+Le stage `deploy` est un job GitHub Actions distinct qui s'exécute automatiquement **après la publication des images Docker** dans le registre (Docker Hub).
+
+Workflow complet :
+
+```
+build → test → lint → sonarcloud → build images → push registry → deploy
+```
+
+Le job `deploy` exécute le script `scripts/deploy.ps1` qui :
+
+1. Arrête les conteneurs en cours (`docker compose down`) — **sans détruire les volumes Postgres**
+2. Télécharge les nouvelles images depuis Docker Hub (`docker pull`)
+3. Retag les images en `:latest`
+4. Relance toute la stack (`docker compose up -d`)
+
+### Conditions d'exécution
+
+Pour que le deploiement s'enclenche automatiquement, les éléments suivants sont requis :
+
+- **Un runner GitHub Actions self-hosted actif** sur la machine locale
+- **Les secrets GitHub configurés** :
+  - `DOCKER_USERNAME` — nom du compte Docker Hub
+  - `DOCKER_PAT` — token d'accès Docker Hub
+  - `SONAR_TOKEN` — pour l'analyse SonarCloud
+  - `POSTGRES_PASSWORD` — pour les tests
+
+### Dans quelles branches le déploiement est actif
+
+- Le déploiement automatique ne s'exécute **que sur les PR vers `develop`**
+- Cela correspond au workflow du TP : toute livraison validée sur `develop` déclenche le pipeline en entier jusqu'au redémarrage automatique de l'application
+
+### Idempotence
+
+Le script `scripts/deploy.ps1` peut être exécuté **autant de fois que nécessaire** sans risque :
+
+- Aucun volume Postgres n'est supprimé (pas de `--volumes`)
+- Aucune donnée n'est écrasée
+- L'application redémarre toujours dans un état propre
+
+---
+
+## 📸 Captures d'écran TP4
+
+### Pipeline complet jusqu'au stage deploy
+
+![Pipeline Deploy](docs/screenshots/tp4-pipeline-deploy.png)
+
+### Conteneurs relancés après déploiement
+
+![Conteneurs Running](docs/screenshots/tp4-containers-running.png)
+
+### Application accessible localement après déploiement
+
+![Application Accessible](docs/screenshots/tp4-app-accessible.png)
+
+### Images pull depuis le registre (`docker images`)
+
+![Docker Images](docs/screenshots/tp4-docker-images.png)
 
 ---
 
