@@ -114,6 +114,53 @@ Exemples :
 
 ---
 
+# ✔ TP4 – Déploiement local automatisé
+
+## 🔄 Déploiement local automatisé
+
+### Fonctionnement
+
+Le stage `deploy` est un job GitHub Actions distinct qui s'exécute automatiquement **après la publication des images Docker** dans le registre (Docker Hub).
+
+Workflow complet :
+
+```
+build → test → lint → sonarcloud → build images → push registry → deploy
+```
+
+Le job `deploy` exécute le script `scripts/deploy.ps1` qui :
+
+1. Arrête les conteneurs en cours (`docker compose down`) — **sans détruire les volumes Postgres**
+2. Télécharge les nouvelles images depuis Docker Hub (`docker pull`)
+3. Retag les images en `:latest`
+4. Relance toute la stack (`docker compose up -d`)
+
+### Conditions d'exécution
+
+Pour que le deploiement s'enclenche automatiquement, les éléments suivants sont requis :
+
+- **Un runner GitHub Actions self-hosted actif** sur la machine locale
+- **Les secrets GitHub configurés** :
+  - `DOCKER_USERNAME` — nom du compte Docker Hub
+  - `DOCKER_PAT` — token d'accès Docker Hub
+  - `SONAR_TOKEN` — pour l'analyse SonarCloud
+  - `POSTGRES_PASSWORD` — pour les tests
+
+### Dans quelles branches le déploiement est actif
+
+- Le déploiement automatique ne s'exécute **que sur les PR vers `develop`**
+- Cela correspond au workflow du TP : toute livraison validée sur `develop` déclenche le pipeline en entier jusqu'au redémarrage automatique de l'application
+
+### Idempotence
+
+Le script `scripts/deploy.ps1` peut être exécuté **autant de fois que nécessaire** sans risque :
+
+- Aucun volume Postgres n'est supprimé (pas de `--volumes`)
+- Aucune donnée n'est écrasée
+- L'application redémarre toujours dans un état propre
+
+---
+
 # Gym Management System
 
 A complete fullstack gym management application built with modern web technologies.
