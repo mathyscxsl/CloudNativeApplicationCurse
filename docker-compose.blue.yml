@@ -3,8 +3,10 @@ services:
     image: maathbluee/cloudnative-backend:latest
     container_name: app-back-blue
     restart: always
+    ports:
+      - "3000:3000"
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     command: node src/index.js
     depends_on:
       - seeder
