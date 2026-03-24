@@ -33,6 +33,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: maathbluee/cloudnative-backend:latest
     container_name: backend
     restart: always
     ports:
@@ -47,6 +48,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: maathbluee/cloudnative-frontend:latest
     container_name: frontend
     restart: always
     ports:
