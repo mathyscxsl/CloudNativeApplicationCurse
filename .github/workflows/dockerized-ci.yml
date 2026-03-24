@@ -65,11 +65,11 @@ jobs:
 
       - name: Install sonar-scanner
         run: |
-          $version = "6.2.1.4610"
-          $url = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$version-windows-x64.zip"
+          $version = "5.0.1.3006"
+          $url = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$version-windows.zip"
           Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\sonar-scanner.zip"
           Expand-Archive -Path "$env:TEMP\sonar-scanner.zip" -DestinationPath "$env:TEMP\sonar-scanner" -Force
-          echo "$env:TEMP\sonar-scanner\sonar-scanner-$version-windows-x64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          echo "$env:TEMP\sonar-scanner\sonar-scanner-$version-windows\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
       - name: Run SonarCloud Scan
         run: |
@@ -82,8 +82,7 @@ jobs:
             "-Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info",
             "-Dsonar.pullrequest.key=${{ github.event.pull_request.number }}",
             "-Dsonar.pullrequest.branch=${{ github.head_ref }}",
-            "-Dsonar.pullrequest.base=${{ github.base_ref }}",
-            "-Dsonar.scanner.skipJreProvisioning=true"
+            "-Dsonar.pullrequest.base=${{ github.base_ref }}"
           )
           & sonar-scanner @params
 
