@@ -13,11 +13,11 @@ $activeColorConf     = Join-Path $PSScriptRoot "..\nginx\active_color.conf"
 $activeColorFrontConf = Join-Path $PSScriptRoot "..\nginx\active_color_front.conf"
 
 if ($Target -eq "BLUE") {
-    $backUpstream  = "proxy_pass http://app_blue_back;"
-    $frontUpstream = "proxy_pass http://app_blue_front;"
+    $backUpstream  = 'set $backend "app-back-blue:3000";' + "`nproxy_pass http://`$backend;"
+    $frontUpstream = 'set $frontend "app-front-blue:80";' + "`nproxy_pass http://`$frontend;"
 } else {
-    $backUpstream  = "proxy_pass http://app_green_back;"
-    $frontUpstream = "proxy_pass http://app_green_front;"
+    $backUpstream  = 'set $backend "app-back-green:3000";' + "`nproxy_pass http://`$backend;"
+    $frontUpstream = 'set $frontend "app-front-green:80";' + "`nproxy_pass http://`$frontend;"
 }
 
 Write-Host "==> Switching reverse proxy to $Target..."
