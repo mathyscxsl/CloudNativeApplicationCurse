@@ -82,7 +82,8 @@ jobs:
             "-Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info",
             "-Dsonar.pullrequest.key=${{ github.event.pull_request.number }}",
             "-Dsonar.pullrequest.branch=${{ github.head_ref }}",
-            "-Dsonar.pullrequest.base=${{ github.base_ref }}"
+            "-Dsonar.pullrequest.base=${{ github.base_ref }}",
+            "-Dsonar.scanner.skipJreProvisioning=true"
           )
           & sonar-scanner @params
 
