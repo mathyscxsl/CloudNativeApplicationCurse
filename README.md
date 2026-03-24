@@ -266,10 +266,67 @@ Nginx repointe vers blue en moins d'une seconde — aucune donnée perdue.
 ### Application accessible après la bascule (Green actif)
 
 ![Green Actif](docs/screenshots/tp5-green-active.png)
+![Green Actif Page](docs/screenshots/tp5-green-active-localhost.png)
 
 ### Logs de bascule (CI + proxy)
 
 ![Logs Bascule](docs/screenshots/tp5-switch-logs.png)
+
+---
+
+# ✔ TP6 – Monitoring & Observabilité
+
+## 🔭 Stack de monitoring
+
+| Composant | Rôle | Port |
+|---|---|---|
+| **Prometheus** | Scrape les métriques `/metrics` du backend | http://localhost:9090 |
+| **Grafana** | Dashboards (métriques + logs) | http://localhost:3030 |
+| **Loki** | Stockage des logs | interne :3100 |
+| **Promtail** | Collecte les logs Docker → Loki | — |
+
+### Lancer la stack monitoring
+
+```bash
+docker compose -f docker-compose.monitoring.yml up -d
+```
+
+### Prérequis
+
+- Le réseau `bluegreen-net` doit exister (`docker network create bluegreen-net`)
+- L'application doit tourner (`docker compose -f docker-compose.base.yml -f docker-compose.blue.yml up -d`)
+- Credentials Grafana : `admin` / `admin` (modifiable via `.env` : `GRAFANA_USER`, `GRAFANA_PASSWORD`)
+
+### Sources de données Grafana
+
+Une fois Grafana ouvert sur http://localhost:3030 :
+
+1. **Prometheus** : `http://prometheus:9090`
+2. **Loki** : `http://loki:3100`
+
+### Métriques exposées par le backend
+
+Le backend expose `/metrics` (format Prometheus) :
+
+- `http_requests_total` — compteur des requêtes HTTP par route/méthode/status
+- `http_request_duration_seconds` — histogramme de latence
+- Métriques Node.js par défaut (mémoire, CPU, event loop)
+
+---
+
+## 📸 Captures d'écran TP6
+
+### Stack monitoring démarrée
+
+![Stack Monitoring](docs/screenshots/tp6-stack-monitoring.png)
+
+### Prometheus – Targets UP
+
+![Prometheus Targets](docs/screenshots/tp6-prometheus-targets.png)
+
+### Grafana – Dashboard métriques + logs
+
+![Dashboard Métriques et Logs](docs/screenshots/tp6-dashboard.png)
 
 ---
 
