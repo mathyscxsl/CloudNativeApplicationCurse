@@ -161,6 +161,26 @@ Le script `scripts/deploy.ps1` peut être exécuté **autant de fois que nécess
 
 ---
 
+## 📸 Captures d'écran TP4
+
+### Pipeline complet jusqu'au stage deploy
+
+![Pipeline Deploy](docs/screenshots/tp4-pipeline-deploy.png)
+
+### Conteneurs relancés après déploiement
+
+![Conteneurs Running](docs/screenshots/tp4-containers-running.png)
+
+### Application accessible localement après déploiement
+
+![Application Accessible](docs/screenshots/tp4-app-accessible.png)
+
+### Images pull depuis le registre (`docker images`)
+
+![Docker Images](docs/screenshots/tp4-docker-images.png)
+
+---
+
 # Gym Management System
 
 A complete fullstack gym management application built with modern web technologies.
