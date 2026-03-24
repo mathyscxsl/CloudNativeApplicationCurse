@@ -181,6 +181,98 @@ Le script `scripts/deploy.ps1` peut être exécuté **autant de fois que nécess
 
 ---
 
+# ✔ TP5 – Déploiement Blue/Green
+
+## 🔵🟢 Déploiement blue/green
+
+### Principe
+
+- **Blue** = version actuellement en production, reçoit le trafic utilisateur
+- **Green** = nouvelle version déployée sur l'environnement inactif
+
+```
+[Client] --> [Reverse Proxy :80] --> [Blue]   (version active)
+                                 \-> [Green]  (version candidate)
+```
+
+La **base de données Postgres est unique** et partagée entre les deux couleurs.
+
+---
+
+### Rôle du reverse proxy
+
+Un conteneur **Nginx** écoute sur `http://localhost` (port 80) et route le trafic vers la couleur active via deux fichiers de configuration montés en volume :
+
+- `nginx/active_color.conf` → route le backend (`/api/`)
+- `nginx/active_color_front.conf` → route le frontend (`/`)
+
+La bascule se fait via `nginx -s reload` **sans redémarrer le proxy**, donc **sans coupure de service**.
+
+---
+
+### Structure des fichiers Docker Compose
+
+| Fichier                    | Contenu                                  |
+|----------------------------|------------------------------------------|
+| `docker-compose.base.yml`  | Postgres, seeder, reverse-proxy Nginx    |
+| `docker-compose.blue.yml`  | `app-back-blue` + `app-front-blue`       |
+| `docker-compose.green.yml` | `app-back-green` + `app-front-green`     |
+
+---
+
+### Déroulé d'un déploiement
+
+1. **Build + push** de la nouvelle image Docker (tagguée avec le SHA)
+2. Le pipeline **détecte la couleur active** en lisant `nginx/active_color.conf`
+3. **Déploiement** de la nouvelle version sur la couleur inactive :
+   ```bash
+   docker compose -f docker-compose.base.yml -f docker-compose.green.yml up -d
+   ```
+4. **Bascule du proxy** via `scripts/switch.ps1 -Target GREEN`
+5. Nginx recharge sa config → trafic vers green **instantanément**
+6. **Blue reste actif** pour un rollback immédiat si nécessaire
+
+### Rollback
+
+```powershell
+powershell -File ./scripts/switch.ps1 -Target BLUE
+```
+
+Nginx repointe vers blue en moins d'une seconde — aucune donnée perdue.
+
+---
+
+### Conditions d'activation du blue/green
+
+- Le job `blue-green-deploy` s'exécute sur **toute PR vers `develop`**
+- Il dépend du job `docker` (images pushées) — il fait partie du pipeline complet :
+  ```
+  lint → build → test → docker → blue-green-deploy
+  ```
+- Requiert : runner self-hosted actif, secrets `DOCKER_USERNAME` / `DOCKER_PAT` configurés
+
+---
+
+## 📸 Captures d'écran TP5
+
+### Reverse proxy en fonctionnement
+
+![Reverse Proxy](docs/screenshots/tp5-reverse-proxy.png)
+
+### Application accessible avant la bascule (Blue actif)
+
+![Blue Actif](docs/screenshots/tp5-blue-active.png)
+
+### Application accessible après la bascule (Green actif)
+
+![Green Actif](docs/screenshots/tp5-green-active.png)
+
+### Logs de bascule (CI + proxy)
+
+![Logs Bascule](docs/screenshots/tp5-switch-logs.png)
+
+---
+
 # Gym Management System
 
 A complete fullstack gym management application built with modern web technologies.
