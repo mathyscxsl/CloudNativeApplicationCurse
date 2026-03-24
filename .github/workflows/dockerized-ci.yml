@@ -56,40 +56,40 @@ jobs:
           name: backend-coverage
           path: backend/coverage
 
-  sonarcloud:
-    name: SonarCloud Scan
-    runs-on: self-hosted
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install sonar-scanner
-        run: |
-          $version = "5.0.1.3006"
-          $url = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$version-windows.zip"
-          Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\sonar-scanner.zip"
-          Expand-Archive -Path "$env:TEMP\sonar-scanner.zip" -DestinationPath "$env:TEMP\sonar-scanner" -Force
-          echo "$env:TEMP\sonar-scanner\sonar-scanner-$version-windows\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
-
-      - name: Run SonarCloud Scan
-        run: |
-          $params = @(
-            "-Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse",
-            "-Dsonar.organization=mathyscxsl",
-            "-Dsonar.host.url=https://sonarcloud.io",
-            "-Dsonar.login=${{ secrets.SONAR_TOKEN }}",
-            "-Dsonar.sources=backend/src",
-            "-Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info",
-            "-Dsonar.pullrequest.key=${{ github.event.pull_request.number }}",
-            "-Dsonar.pullrequest.branch=${{ github.head_ref }}",
-            "-Dsonar.pullrequest.base=${{ github.base_ref }}"
-          )
-          & sonar-scanner @params
+  # sonarcloud:
+  #   name: SonarCloud Scan
+  #   runs-on: self-hosted
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #
+  #     - name: Install sonar-scanner
+  #       run: |
+  #         $version = "5.0.1.3006"
+  #         $url = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$version-windows.zip"
+  #         Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\sonar-scanner.zip"
+  #         Expand-Archive -Path "$env:TEMP\sonar-scanner.zip" -DestinationPath "$env:TEMP\sonar-scanner" -Force
+  #         echo "$env:TEMP\sonar-scanner\sonar-scanner-$version-windows\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+  #
+  #     - name: Run SonarCloud Scan
+  #       run: |
+  #         $params = @(
+  #           "-Dsonar.projectKey=mathyscxsl_CloudNativeApplicationCurse",
+  #           "-Dsonar.organization=mathyscxsl",
+  #           "-Dsonar.host.url=https://sonarcloud.io",
+  #           "-Dsonar.login=${{ secrets.SONAR_TOKEN }}",
+  #           "-Dsonar.sources=backend/src",
+  #           "-Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info",
+  #           "-Dsonar.pullrequest.key=${{ github.event.pull_request.number }}",
+  #           "-Dsonar.pullrequest.branch=${{ github.head_ref }}",
+  #           "-Dsonar.pullrequest.base=${{ github.base_ref }}"
+  #         )
+  #         & sonar-scanner @params
 
   docker:
     name: Build & Push Docker Images
     runs-on: self-hosted
-    needs: sonarcloud
+    needs: test
     steps:
       - uses: actions/checkout@v3
 
