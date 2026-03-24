@@ -137,3 +137,37 @@ jobs:
 
       - name: Verify containers are running
         run: docker compose ps
+
+  blue-green-deploy:
+    name: Blue/Green Deploy
+    runs-on: self-hosted
+    needs: docker
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Pull latest images
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }}
+          docker pull ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/cloudnative-backend:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/cloudnative-frontend:latest
+
+      - name: Determine active color and deploy inactive
+        run: |
+          $activeConf = Get-Content -Path "./nginx/active_color.conf" -Raw
+          if ($activeConf -match "blue") {
+            $inactive = "GREEN"
+            Write-Host "Active: BLUE → Deploying to: GREEN"
+            docker compose -f docker-compose.base.yml -f docker-compose.green.yml up -d
+          } else {
+            $inactive = "BLUE"
+            Write-Host "Active: GREEN → Deploying to: BLUE"
+            docker compose -f docker-compose.base.yml -f docker-compose.blue.yml up -d
+          }
+          echo "INACTIVE_COLOR=$inactive" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      - name: Switch reverse proxy to new version
+        run: powershell -File ./scripts/switch.ps1 -Target $env:INACTIVE_COLOR
+
+      - name: Verify containers after switch
+        run: docker compose -f docker-compose.base.yml ps
