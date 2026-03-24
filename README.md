@@ -114,6 +114,222 @@ Exemples :
 
 ---
 
+# ✔ TP4 – Déploiement local automatisé
+
+## 🔄 Déploiement local automatisé
+
+### Fonctionnement
+
+Le stage `deploy` est un job GitHub Actions distinct qui s'exécute automatiquement **après la publication des images Docker** dans le registre (Docker Hub).
+
+Workflow complet :
+
+```
+build → test → lint → sonarcloud → build images → push registry → deploy
+```
+
+Le job `deploy` exécute le script `scripts/deploy.ps1` qui :
+
+1. Arrête les conteneurs en cours (`docker compose down`) — **sans détruire les volumes Postgres**
+2. Télécharge les nouvelles images depuis Docker Hub (`docker pull`)
+3. Retag les images en `:latest`
+4. Relance toute la stack (`docker compose up -d`)
+
+### Conditions d'exécution
+
+Pour que le deploiement s'enclenche automatiquement, les éléments suivants sont requis :
+
+- **Un runner GitHub Actions self-hosted actif** sur la machine locale
+- **Les secrets GitHub configurés** :
+  - `DOCKER_USERNAME` — nom du compte Docker Hub
+  - `DOCKER_PAT` — token d'accès Docker Hub
+  - `SONAR_TOKEN` — pour l'analyse SonarCloud
+  - `POSTGRES_PASSWORD` — pour les tests
+
+### Dans quelles branches le déploiement est actif
+
+- Le déploiement automatique ne s'exécute **que sur les PR vers `develop`**
+- Cela correspond au workflow du TP : toute livraison validée sur `develop` déclenche le pipeline en entier jusqu'au redémarrage automatique de l'application
+
+### Idempotence
+
+Le script `scripts/deploy.ps1` peut être exécuté **autant de fois que nécessaire** sans risque :
+
+- Aucun volume Postgres n'est supprimé (pas de `--volumes`)
+- Aucune donnée n'est écrasée
+- L'application redémarre toujours dans un état propre
+
+---
+
+## 📸 Captures d'écran TP4
+
+### Pipeline complet jusqu'au stage deploy
+
+![Pipeline Deploy](docs/screenshots/tp4-pipeline-deploy.png)
+
+### Conteneurs relancés après déploiement
+
+![Conteneurs Running](docs/screenshots/tp4-containers-running.png)
+
+### Application accessible localement après déploiement
+
+![Application Accessible](docs/screenshots/tp4-app-accessible.png)
+
+### Images pull depuis le registre (`docker images`)
+
+![Docker Images](docs/screenshots/tp4-docker-images.png)
+
+---
+
+# ✔ TP5 – Déploiement Blue/Green
+
+## 🔵🟢 Déploiement blue/green
+
+### Principe
+
+- **Blue** = version actuellement en production, reçoit le trafic utilisateur
+- **Green** = nouvelle version déployée sur l'environnement inactif
+
+```
+[Client] --> [Reverse Proxy :80] --> [Blue]   (version active)
+                                 \-> [Green]  (version candidate)
+```
+
+La **base de données Postgres est unique** et partagée entre les deux couleurs.
+
+---
+
+### Rôle du reverse proxy
+
+Un conteneur **Nginx** écoute sur `http://localhost` (port 80) et route le trafic vers la couleur active via deux fichiers de configuration montés en volume :
+
+- `nginx/active_color.conf` → route le backend (`/api/`)
+- `nginx/active_color_front.conf` → route le frontend (`/`)
+
+La bascule se fait via `nginx -s reload` **sans redémarrer le proxy**, donc **sans coupure de service**.
+
+---
+
+### Structure des fichiers Docker Compose
+
+| Fichier                    | Contenu                                  |
+|----------------------------|------------------------------------------|
+| `docker-compose.base.yml`  | Postgres, seeder, reverse-proxy Nginx    |
+| `docker-compose.blue.yml`  | `app-back-blue` + `app-front-blue`       |
+| `docker-compose.green.yml` | `app-back-green` + `app-front-green`     |
+
+---
+
+### Déroulé d'un déploiement
+
+1. **Build + push** de la nouvelle image Docker (tagguée avec le SHA)
+2. Le pipeline **détecte la couleur active** en lisant `nginx/active_color.conf`
+3. **Déploiement** de la nouvelle version sur la couleur inactive :
+   ```bash
+   docker compose -f docker-compose.base.yml -f docker-compose.green.yml up -d
+   ```
+4. **Bascule du proxy** via `scripts/switch.ps1 -Target GREEN`
+5. Nginx recharge sa config → trafic vers green **instantanément**
+6. **Blue reste actif** pour un rollback immédiat si nécessaire
+
+### Rollback
+
+```powershell
+powershell -File ./scripts/switch.ps1 -Target BLUE
+```
+
+Nginx repointe vers blue en moins d'une seconde — aucune donnée perdue.
+
+---
+
+### Conditions d'activation du blue/green
+
+- Le job `blue-green-deploy` s'exécute sur **toute PR vers `develop`**
+- Il dépend du job `docker` (images pushées) — il fait partie du pipeline complet :
+  ```
+  lint → build → test → docker → blue-green-deploy
+  ```
+- Requiert : runner self-hosted actif, secrets `DOCKER_USERNAME` / `DOCKER_PAT` configurés
+
+---
+
+## 📸 Captures d'écran TP5
+
+### Reverse proxy en fonctionnement
+
+![Reverse Proxy](docs/screenshots/tp5-reverse-proxy.png)
+
+### Application accessible avant la bascule (Blue actif)
+
+![Blue Actif](docs/screenshots/tp5-blue-active.png)
+
+### Application accessible après la bascule (Green actif)
+
+![Green Actif](docs/screenshots/tp5-green-active.png)
+![Green Actif Page](docs/screenshots/tp5-green-active-localhost.png)
+
+### Logs de bascule (CI + proxy)
+
+![Logs Bascule](docs/screenshots/tp5-switch-logs.png)
+
+---
+
+# ✔ TP6 – Monitoring & Observabilité
+
+## 🔭 Stack de monitoring
+
+| Composant | Rôle | Port |
+|---|---|---|
+| **Prometheus** | Scrape les métriques `/metrics` du backend | http://localhost:9090 |
+| **Grafana** | Dashboards (métriques + logs) | http://localhost:3030 |
+| **Loki** | Stockage des logs | interne :3100 |
+| **Promtail** | Collecte les logs Docker → Loki | — |
+
+### Lancer la stack monitoring
+
+```bash
+docker compose -f docker-compose.monitoring.yml up -d
+```
+
+### Prérequis
+
+- Le réseau `bluegreen-net` doit exister (`docker network create bluegreen-net`)
+- L'application doit tourner (`docker compose -f docker-compose.base.yml -f docker-compose.blue.yml up -d`)
+- Credentials Grafana : `admin` / `admin` (modifiable via `.env` : `GRAFANA_USER`, `GRAFANA_PASSWORD`)
+
+### Sources de données Grafana
+
+Une fois Grafana ouvert sur http://localhost:3030 :
+
+1. **Prometheus** : `http://prometheus:9090`
+2. **Loki** : `http://loki:3100`
+
+### Métriques exposées par le backend
+
+Le backend expose `/metrics` (format Prometheus) :
+
+- `http_requests_total` — compteur des requêtes HTTP par route/méthode/status
+- `http_request_duration_seconds` — histogramme de latence
+- Métriques Node.js par défaut (mémoire, CPU, event loop)
+
+---
+
+## 📸 Captures d'écran TP6
+
+### Stack monitoring démarrée
+
+![Stack Monitoring](docs/screenshots/tp6-stack-monitoring.png)
+
+### Prometheus – Targets UP
+
+![Prometheus Targets](docs/screenshots/tp6-prometheus-targets.png)
+
+### Grafana – Dashboard métriques + logs
+
+![Dashboard Métriques et Logs](docs/screenshots/tp6-dashboard.png)
+
+---
+
 # Gym Management System
 
 A complete fullstack gym management application built with modern web technologies.

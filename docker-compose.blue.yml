@@ -1,0 +1,24 @@
+services:
+  app-back-blue:
+    image: maathbluee/cloudnative-backend:latest
+    container_name: app-back-blue
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    command: node src/index.js
+    depends_on:
+      - seeder
+
+  app-front-blue:
+    image: maathbluee/cloudnative-frontend:latest
+    container_name: app-front-blue
+    restart: always
+    depends_on:
+      - app-back-blue
+
+networks:
+  default:
+    name: bluegreen-net
+    external: true
